@@ -9,6 +9,10 @@ defmodule NervesMountManager.MixProject do
       version: @version,
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
+      build_embedded: true,
+      compilers: [:elixir_make | Mix.compilers()],
+      make_targets: ["all"],
+      make_clean: ["clean"],
       deps: deps(),
       package: package(),
       source_url: "https://github.com/brandonmenc/nerves_mount_manager",
@@ -28,6 +32,7 @@ defmodule NervesMountManager.MixProject do
 
   defp deps do
     [
+      {:elixir_make, "~> 0.5", runtime: false}
     ]
   end
 
