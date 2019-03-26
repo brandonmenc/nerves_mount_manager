@@ -4,6 +4,10 @@ defmodule NervesMountManager.MountWatcher do
 
   alias NervesMountManager.Fstab
 
+  defmodule State do
+    defstruct [:port, mounts: []]
+  end
+
   def start_link(opts \\ []) do
     GenServer.start_link(__MODULE__, opts, name: __MODULE__)
   end
@@ -21,7 +25,7 @@ defmodule NervesMountManager.MountWatcher do
 
     force_update(port)
 
-    {:ok, %{port: port}}
+    {:ok, %State{port: port}}
   end
 
   def force_update(port) do
@@ -30,9 +34,15 @@ defmodule NervesMountManager.MountWatcher do
     System.cmd("kill", ["-USR1", "#{pid}"])
   end
 
-  def handle_info({port, {:data, message}}, _state) do
-    SystemRegistry.update([:state, :mounts], Fstab.parse(message))
+  def handle_info({_port, {:data, message}}, %State{} = state) do
+    mounts = Fstab.parse(message)
 
-    {:noreply, %{port: port}}
+    SystemRegistry.update([:state, :mounts], %{
+      mounts: mounts,
+      added: mounts -- state.mounts,
+      removed: state.mounts -- mounts
+    })
+
+    {:noreply, %{state | mounts: mounts}}
   end
 end
