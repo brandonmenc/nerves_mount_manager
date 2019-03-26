@@ -19,7 +19,15 @@ defmodule NervesMountManager.MountWatcher do
         :exit_status
       ])
 
+    force_update(port)
+
     {:ok, %{port: port}}
+  end
+
+  def force_update(port) do
+    pid = Port.info(port)[:os_pid]
+
+    System.cmd("kill", ["-USR1", "#{pid}"])
   end
 
   def handle_info({port, {:data, message}}, _state) do
