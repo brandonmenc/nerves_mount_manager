@@ -26,6 +26,7 @@ defmodule NervesMountManager.MixProject do
 
   def application do
     [
+      mod: {NervesMountManager.Application, []},
       extra_applications: [:logger]
     ]
   end
